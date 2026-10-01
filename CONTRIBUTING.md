@@ -66,11 +66,11 @@ continua íntegra, se o contraste passa AA, se o movimento respeita
 `prefers-reduced-motion`.
 
 **Em mudança estrutural:** se o componente novo poderia ser Server Component, se
-o conteúdo foi para `src/content/` em vez de ficar no JSX, se o HTML é semântico.
+o conteúdo foi para `institucional/src/content/` em vez de ficar no JSX, se o HTML é semântico.
 
 ## Ordem das dobras
 
-A sequência em `src/app/page.tsx` segue o roteiro aprovado e **não deve ser
+A sequência em `institucional/src/App.tsx` segue o roteiro aprovado e **não deve ser
 alterada sem alinhamento com marketing**. Cada dobra pressupõe o argumento da
 anterior: a garantia só faz sentido depois do processo; os ETFs só fazem sentido
 depois do método.

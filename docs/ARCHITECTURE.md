@@ -1,67 +1,89 @@
 # Arquitetura
 
+Este documento trata da página institucional (`institucional/`). O repositório
+também abriga a LP da Escola (`escola/`, HTML + Vite + Tailwind 3) e um índice
+(`indice/`). As três saem num único `dist/`; ver [docs/DEPLOY.md](DEPLOY.md).
+
+```
+/
+├── institucional/      página institucional (Vite + React)
+├── escola/             LP da Escola (Vite, HTML puro)
+├── indice/             índice publicado na raiz do site
+├── scripts/            build.mjs, preview.mjs, esquadro.mjs
+├── docs/, acervo/
+└── package.json        npm workspaces: um `npm ci` instala tudo
+```
+
+As duas páginas têm dependências separadas porque a Escola usa Tailwind 3 e o
+institucional usa Tailwind 4, que não convivem na mesma árvore. Os workspaces do
+npm resolvem isso com um lock só.
+
 ## Stack
 
 | Camada     | Escolha                                  | Por quê                                                          |
 | ---------- | ---------------------------------------- | ---------------------------------------------------------------- |
-| Framework  | Next.js 16 (App Router)                  | Renderização estática, otimização de imagem e metadados nativos  |
+| Build      | Vite 8 + React 19                        | Build rápido, mesma ferramenta da LP da Escola                   |
 | Linguagem  | TypeScript (strict)                      | O tipo do conteúdo é o contrato de edição                        |
 | Estilo     | Tailwind CSS 4                           | Tokens declarados em `@theme`, sem arquivo de configuração       |
-| Fontes     | `next/font/google`                       | Auto-hospedadas no build; zero requisição a terceiros em runtime |
+| Fontes     | `@fontsource-variable/inter`             | Auto-hospedadas no build; zero requisição a terceiros em runtime |
 | Formatação | Prettier + `prettier-plugin-tailwindcss` | Ordem de classe estável, diff limpo                              |
 
 A página inteira é **estática**. Não há banco, API, formulário ou estado de
-servidor: `npm run build` gera a pasta `out/` com HTML pronto (`output: "export"`),
-publicada no GitHub Pages. Todo destino de conversão é um link para um domínio da
-AUVP que já existe.
+servidor: o build gera HTML pronto, **pré-renderizado** a partir dos componentes
+React (`scripts/build.mjs` + `src/entry-server.tsx`), e o navegador só hidrata.
+Todo destino de conversão é um link para um domínio da AUVP que já existe.
 
-Como o Pages serve o site sob `/lp-auvp-institucional`, o build recebe o
-`basePath` por variável de ambiente e `src/lib/asset.ts` prefixa os caminhos de
-imagem, porque o `next/image` não faz isso quando `unoptimized` está ligado.
-Os detalhes, e por que cada opção de `next.config.ts` existe, estão em
-[docs/DEPLOY.md](DEPLOY.md).
+Como o site pode ser servido sob subcaminho (`/<repo>/institucional/` no Pages),
+a `base` do Vite vem do ambiente e `src/lib/asset.ts` prefixa os caminhos de
+imagem que vivem no conteúdo. Detalhes em [docs/DEPLOY.md](DEPLOY.md).
+
+A página foi escrita em Next.js 16 e migrada para Vite em 2026-10 para unificar a
+ferramenta com a LP da Escola. O que era do Next virou: `next/image` → `<img>`
+(as fotos já são WebP no tamanho final), `next/link` → `<a>`, `layout.tsx` →
+`index.html`, `robots.ts`/`sitemap.ts` → gerados em `scripts/build.mjs`.
 
 ## Estrutura
 
 ```
-src/
-├── app/
-│   ├── layout.tsx      fontes, metadados, Open Graph
-│   ├── page.tsx        composição das dobras, na ordem do roteiro
-│   ├── globals.css     tokens de design e utilitários próprios
-│   ├── robots.ts
-│   └── sitemap.ts
-├── components/
-│   ├── layout/         cabeçalho fixo, rodapé, botão de WhatsApp
-│   ├── motion/         rolagem suave, paralaxe, contagem, revelações
-│   ├── sections/       uma dobra por arquivo
-│   ├── ui/             Container, Section, Button, Figure, Reveal, Eyebrow…
-│   └── StructuredData.tsx
-├── content/            TODO o texto da página
-└── lib/                utilitários
+institucional/
+├── index.html          metadados, Open Graph, fonte Sentient
+├── vite.config.ts      base e URL canônica vindas do ambiente
+├── scripts/build.mjs   build + pré-renderização + robots/sitemap
+└── src/
+    ├── App.tsx         composição das dobras, na ordem do roteiro
+    ├── main.tsx        hidratação no navegador
+    ├── entry-server.tsx  renderização no build
+    ├── globals.css     tokens de design e utilitários próprios
+    ├── components/
+    │   ├── layout/     cabeçalho fixo, rodapé, botão de WhatsApp
+    │   ├── motion/     rolagem suave, paralaxe, contagem, revelações
+    │   ├── sections/   uma dobra por arquivo
+    │   ├── ui/         Container, Section, Button, Figure, Reveal, Eyebrow…
+    │   └── StructuredData.tsx
+    ├── content/        TODO o texto da página
+    └── lib/            utilitários
 ```
 
 ## Os três princípios que sustentam o resto
 
 **1. Conteúdo separado de apresentação.**
-`src/content/` é a fonte única de verdade textual. Marketing edita ali sem
+`institucional/src/content/` é a fonte única de verdade textual. Marketing edita ali sem
 encostar em JSX. O TypeScript valida a forma do dado, então um campo faltando
 quebra o build em vez de quebrar a página.
 
 **2. Componente de seção não recebe props.**
-Cada dobra importa o próprio conteúdo. Isso torna `page.tsx` uma lista legível da
+Cada dobra importa o próprio conteúdo. Isso torna `App.tsx` uma lista legível da
 estrutura da página e elimina a passagem de dados em cadeia.
 
-**3. Server Component por padrão.**
-Só três arquivos são `"use client"`, e cada um por um motivo específico:
+**3. HTML primeiro, JavaScript para o movimento.**
+Todo o conteúdo está no HTML pré-renderizado, então a página é lida, indexada e
+navegável antes de qualquer script. O JavaScript hidrata a árvore e liga o que
+depende do navegador: estado de rolagem e menu móvel (`SiteHeader`), troca de
+categoria no FAQ, `IntersectionObserver` nas revelações, contagem e paralaxe.
 
-| Arquivo      | Motivo                         |
-| ------------ | ------------------------------ |
-| `SiteHeader` | Estado de rolagem e menu móvel |
-| `Faq`        | Troca de categoria             |
-| `Reveal`     | `IntersectionObserver`         |
-
-O restante da página não envia JavaScript ao navegador.
+Diferença em relação ao Next: lá só os componentes `"use client"` iam ao
+navegador. Aqui a árvore inteira vai no bundle (cerca de 80 KB com gzip). Se o
+peso virar problema, o caminho é hidratar só as ilhas interativas.
 
 ## Decisões que valem explicação
 

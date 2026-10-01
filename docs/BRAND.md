@@ -101,7 +101,7 @@ A faixa amarela é única na página. Repeti-la gasta o efeito.
 Sentient é a serifa do próprio logotipo da AUVP Escola, e por isso é a serifa do
 site: logo e títulos são literalmente a mesma letra, não uma aproximação.
 
-Ela não está no Google Fonts, então não passa pelo `next/font`. Vem do CDN da
+Ela não está no Google Fonts nem no Fontsource. Vem do CDN da
 fundição (Fontshare, Indian Type Foundry), no mesmo padrão que a landing de
 produção da escola já usa para a Satoshi:
 
@@ -273,7 +273,7 @@ rodapé, que é onde alguém vai procurar um link.
 **Se voltar, é com as letras do arquivo da marca, e não com a palavra composta
 numa fonte.** O A da AUVP é um V invertido, sem travessão, e digitar "A" em
 qualquer fonte, Sentient inclusive, entrega a letra errada. Os contornos estão
-em `public/logos/auvp-monograma.svg`, extraídos do primeiro grupo de
+em `institucional/public/logos/auvp-monograma.svg`, extraídos do primeiro grupo de
 `auvp-escola-serif-preta.svg` e recortados na caixa exata das quatro letras. O
 componente React que os servia foi removido junto com o uso.
 
@@ -339,7 +339,7 @@ leitura**: dá profundidade e continuidade à rolagem, nunca chama atenção par
   encerramento, para o fim das inscrições da turma, e ela vale sob três
   condições: some sozinha quando a data passa ou some do conteúdo, não pisca
   nem fica vermelha, e entrega a data por extenso a leitor de tela em vez do
-  tique-taque. Ver `src/components/sections/ClassCountdown.tsx`.
+  tique-taque. Ver `institucional/src/components/sections/ClassCountdown.tsx`.
 - Mais de uma cor de destaque. O amarelo é a única, com a exceção documentada
   das cores de ETF.
 - Elemento do hero que responda ao ponteiro.

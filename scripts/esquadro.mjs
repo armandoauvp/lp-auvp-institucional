@@ -9,7 +9,7 @@
  * ## Como usar
  *
  *     npm run esquadro                      # todas as fotos publicadas
- *     npm run esquadro -- public/images/x.webp acervo/originais/y.jpg
+ *     npm run esquadro -- institucional/public/images/x.webp acervo/originais/y.jpg
  *
  * Sai com código 1 se alguma foto estiver torta. **Não roda no CI**, e é de
  * propósito: as fotos entram no repositório já recortadas e já no prumo, então
@@ -47,7 +47,7 @@ import process from "node:process";
 import sharp from "sharp";
 
 /** Fotos publicadas ficam aqui. É o alvo padrão. */
-const PASTA_PADRAO = "public/images";
+const PASTA_PADRAO = "institucional/public/images";
 
 /** Lado maior da análise. Acima disso o ganho some e o custo cresce. */
 const LADO = 1400;
@@ -336,7 +336,7 @@ async function alvos() {
  * escreveu: se um ajuste de parâmetro cegar o detector, isto reprova.
  */
 async function autoteste() {
-  const referencia = "public/images/gdb-itinerante-goiania.webp";
+  const referencia = "institucional/public/images/gdb-itinerante-goiania.webp";
   const inclinacoes = [-2, -1, 1, 2];
   let falhas = 0;
 

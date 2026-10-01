@@ -31,29 +31,27 @@ jobs:
           cache: npm
 
       # Descobre o endereço real das Pages deste repositório. É daqui que saem
-      # o basePath e a URL canônica. Assim, no dia em que um domínio próprio
+      # o subcaminho e a URL canônica. Assim, no dia em que um domínio próprio
       # for configurado, o build se ajusta sozinho, sem editar nada.
       - name: Descobrir configuração do Pages
         id: pages
         uses: actions/configure-pages@v5
 
+      # Um único install cobre as duas páginas (npm workspaces).
       - name: Instalar dependências
         run: npm ci
 
+      # Gera dist/ com o índice, institucional/ e escola/. O .nojekyll também
+      # sai daqui. Ver scripts/build.mjs.
       - name: Build
         env:
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
+          SITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: npm run build
-
-      # O Pages ignora pastas iniciadas por underscore quando processa Jekyll,
-      # e o Next serve tudo de `_next`. O arquivo desliga esse processamento.
-      - name: Desligar o Jekyll
-        run: touch out/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: out
+          path: dist
 
   deploy:
     name: Publicar

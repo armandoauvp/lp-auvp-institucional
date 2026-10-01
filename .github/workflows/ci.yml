@@ -11,7 +11,7 @@ on:
 
 jobs:
   verificacao:
-    name: Tipos, lint, formatação e build
+    name: Tipos, lint, formatação, testes e build
     runs-on: ubuntu-latest
 
     steps:
@@ -33,6 +33,9 @@ jobs:
 
       - name: Verificar formatação
         run: npm run format:check
+
+      - name: Testes da Escola
+        run: npm test
 
       - name: Build
         run: npm run build

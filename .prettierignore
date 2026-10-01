@@ -1,4 +1,7 @@
-.next
 node_modules
-public
+dist
 package-lock.json
+institucional/public
+# A LP da Escola veio de outro repositório e nunca passou pelo Prettier.
+# Formatar tudo de uma vez geraria um diff gigante sem mudança real.
+escola

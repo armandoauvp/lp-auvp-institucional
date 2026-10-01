@@ -4,6 +4,19 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ## [Não publicado]
 
+### Alterado
+
+- **Repositório unificado com a LP da Escola.** O site publicado passa a ter três
+  endereços: o índice em `/`, esta página em `/institucional/` e a landing da
+  Escola em `/escola/`. Cada página vive na sua pasta, com um único
+  `npm ci` para tudo (npm workspaces). Ver [docs/DEPLOY.md](docs/DEPLOY.md).
+- **Next.js trocado por Vite + React.** Os componentes seguem os mesmos; saiu
+  só o que era do Next (`next/image`, `next/link`, `next/font`, `layout.tsx`,
+  `robots.ts`, `sitemap.ts`). A página continua chegando pré-renderizada, agora
+  por `institucional/scripts/build.mjs`.
+- **Publicação também na Vercel**, por `vercel.json`, a partir do mesmo `dist/`
+  do GitHub Pages.
+
 ### Adicionado
 
 - **Contagem regressiva na dobra de encerramento**, na coluna da esquerda, com
