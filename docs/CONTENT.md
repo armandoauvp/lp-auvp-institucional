@@ -1,6 +1,6 @@
 # Como editar o conteúdo
 
-Todo texto visível da página está em `src/content/`. Não é preciso abrir nenhum
+Todo texto visível da página está em `institucional/src/content/`. Não é preciso abrir nenhum
 componente para trocar uma palavra, um número, um link ou uma pergunta do FAQ.
 
 ## Mapa: dobra → arquivo
@@ -26,7 +26,7 @@ Nome da instituição, links externos, WhatsApp, e-mail e URL canônica ficam to
 em `site.ts`.
 
 **A ordem do menu é a ordem das dobras.** Ao mover uma dobra em
-`src/app/page.tsx`, confira `primaryNav` em `navigation.ts`: um menu que lista
+`institucional/src/App.tsx`, confira `primaryNav` em `navigation.ts`: um menu que lista
 fora de ordem faz quem lê perder a noção de onde está.
 
 ---
@@ -35,7 +35,7 @@ fora de ordem faz quem lê perder a noção de onde está.
 
 ### Atualizar os números institucionais
 
-`src/content/stats.ts`. O valor é texto livre, então o formato brasileiro
+`institucional/src/content/stats.ts`. O valor é texto livre, então o formato brasileiro
 (`+62.285`, `40 MI`) é preservado exatamente como escrito.
 
 ```ts
@@ -47,7 +47,7 @@ tipo de erro que custa credibilidade.
 
 ### Trocar um link
 
-`src/content/site.ts`, objeto `links`. Um lugar só: o link aparece em vários
+`institucional/src/content/site.ts`, objeto `links`. Um lugar só: o link aparece em vários
 botões da página e todos leem daqui.
 
 **A fonte de um endereço externo é a página da escola em produção**, o
@@ -65,7 +65,7 @@ ausente, e âncora sem destino ainda por cima entra no caminho do Tab.
 
 ### Abrir uma turma nova
 
-`src/content/closing.ts`, bloco `countdown`. São dois campos, e **os dois andam
+`institucional/src/content/closing.ts`, bloco `countdown`. São dois campos, e **os dois andam
 juntos**: turma nova tem número novo e data nova.
 
 ```ts
@@ -91,7 +91,7 @@ contagem nenhuma.
 
 ### Adicionar uma pergunta ao FAQ
 
-`src/content/faq.ts`, dentro da categoria certa. A pergunta entra
+`institucional/src/content/faq.ts`, dentro da categoria certa. A pergunta entra
 automaticamente no dado estruturado de `FAQPage` que o Google lê, então:
 
 - resposta em texto puro, **sem HTML**;
@@ -100,8 +100,8 @@ automaticamente no dado estruturado de `FAQPage` que o Google lê, então:
 
 ### Adicionar um módulo ao conteúdo programático
 
-`src/content/curriculum.ts`. Antes, cadastre o ícone em
-`src/components/ui/ModuleIcon.tsx` e adicione a chave ao tipo `Module["icon"]`,
+`institucional/src/content/curriculum.ts`. Antes, cadastre o ícone em
+`institucional/src/components/ui/ModuleIcon.tsx` e adicione a chave ao tipo `Module["icon"]`,
 o TypeScript recusa uma chave que não exista.
 
 Os ícones são traço de 1px em `viewBox` 32×32, sem preenchimento. Ver
@@ -109,7 +109,7 @@ Os ícones são traço de 1px em `viewBox` 32×32, sem preenchimento. Ver
 
 ### Adicionar um produto ou uma parceria
 
-`src/content/initiatives.ts`. Produtos entram na grade; parcerias entram nas
+`institucional/src/content/initiatives.ts`. Produtos entram na grade; parcerias entram nas
 faixas horizontais e **alternam o lado da foto automaticamente** pelo índice,
 não é preciso configurar nada.
 
@@ -124,7 +124,7 @@ Não é link nem botão, porque não há para onde ir.
 
 ### Preencher uma foto pendente
 
-Ver `docs/ASSETS.md`. Em resumo: coloque o arquivo em `public/images/` e troque
+Ver `docs/ASSETS.md`. Em resumo: coloque o arquivo em `institucional/public/images/` e troque
 `src: null` pelo caminho.
 
 ---

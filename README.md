@@ -1,4 +1,19 @@
-# AUVP · Página institucional
+# AUVP · Páginas
+
+Repositório das páginas da **AUVP Escola de Investimentos**, publicadas juntas
+num único site estático:
+
+| Caminho           | Pasta            | O que é                                    |
+| ----------------- | ---------------- | ------------------------------------------ |
+| `/`               | `indice/`        | Índice com links para as duas páginas      |
+| `/institucional/` | `institucional/` | Página institucional (Vite + React)        |
+| `/escola/`        | `escola/`        | Landing page da Escola (Vite + Tailwind 3) |
+
+O resto deste README trata da página institucional. A LP da Escola é HTML
+editado direto em `escola/index.html`; os masters das imagens dela estão em
+`escola/imagens-originais/`.
+
+## Página institucional
 
 Página institucional da **AUVP Escola de Investimentos**, construída para
 posicionar a instituição como uma escola clássica e sólida: serifa, régua fina,
@@ -15,21 +30,24 @@ quem chega pela primeira vez, e que sustenta autoridade para quem já conhece.
 Requer Node 22 (ver `.nvmrc`).
 
 ```bash
-npm install
-npm run dev     # http://localhost:3000
+npm install            # instala as duas páginas (npm workspaces)
+npm run dev            # institucional em http://localhost:5173
+npm run dev:escola     # Escola em http://localhost:5173
 ```
 
 ## Comandos
 
-| Comando             | O que faz                                       |
-| ------------------- | ----------------------------------------------- |
-| `npm run dev`       | Servidor de desenvolvimento                     |
-| `npm run build`     | Build de produção                               |
-| `npm run start`     | Serve o build                                   |
-| `npm run typecheck` | TypeScript, sem emitir                          |
-| `npm run lint`      | ESLint                                          |
-| `npm run format`    | Aplica o Prettier                               |
-| `npm run check`     | Tipos, lint e formatação, o mesmo que a CI roda |
+| Comando              | O que faz                                               |
+| -------------------- | ------------------------------------------------------- |
+| `npm run dev`        | Desenvolvimento do institucional                        |
+| `npm run dev:escola` | Desenvolvimento da Escola                               |
+| `npm run build`      | Monta o site completo em `dist/`                        |
+| `npm run preview`    | Serve `dist/` em http://localhost:4173                  |
+| `npm run typecheck`  | TypeScript, sem emitir                                  |
+| `npm run lint`       | ESLint                                                  |
+| `npm test`           | Testes da Escola (`node --test`)                        |
+| `npm run format`     | Aplica o Prettier                                       |
+| `npm run check`      | Tipos, lint, formatação e testes, o mesmo que a CI roda |
 
 ## Estrutura da página
 
@@ -51,14 +69,14 @@ Onze dobras, na ordem do roteiro aprovado:
 
 ## Onde mexer
 
-**Trocar um texto, um número, um link ou uma pergunta do FAQ** → `src/content/`.
+**Trocar um texto, um número, um link ou uma pergunta do FAQ** → `institucional/src/content/`.
 Nenhum componente precisa ser aberto. Ver **[docs/CONTENT.md](docs/CONTENT.md)**.
 
 **Adicionar ou recortar uma foto** → ver **[docs/ASSETS.md](docs/ASSETS.md)**, que
 traz o diagnóstico do acervo, a direção de recorte e o briefing do que ainda
 precisa ser produzido.
 
-**Mexer em cor, tipografia ou espaçamento** → tokens em `src/app/globals.css`,
+**Mexer em cor, tipografia ou espaçamento** → tokens em `institucional/src/globals.css`,
 com o racional em **[docs/BRAND.md](docs/BRAND.md)**.
 
 ## Documentação
@@ -76,16 +94,18 @@ com o racional em **[docs/BRAND.md](docs/BRAND.md)**.
 
 ## Publicação
 
-Export estático publicado no GitHub Pages a cada push na `main`, pelo workflow
-`.github/workflows/deploy.yml`.
+O mesmo `dist/` serve dois destinos:
 
-**<https://produtosauvp.github.io/lp-auvp-institucional/>**
+- **GitHub Pages**, a cada push na `main`, pelo workflow
+  `.github/workflows/deploy.yml`.
+  **<https://produtosauvp.github.io/lp-auvp-institucional/>**
+- **Vercel**, configurada por `vercel.json`: basta importar o repositório.
 
-O site é servido sob subcaminho, então o build recebe o `basePath` do próprio
-GitHub. Nada fica fixado no código, e a migração para domínio próprio não exige
-mudança de código. Ver [docs/DEPLOY.md](docs/DEPLOY.md), inclusive para testar o
-build de produção localmente antes de publicar (o `npm run dev` roda na raiz e
-não pega erro de caminho).
+No Pages o site é servido sob subcaminho, então o build recebe o prefixo do
+próprio GitHub. Nada fica fixado no código, e a migração para domínio próprio não
+exige mudança de código. Ver [docs/DEPLOY.md](docs/DEPLOY.md), inclusive para
+testar o build de produção localmente antes de publicar (o `npm run dev` roda na
+raiz e não pega erro de caminho).
 
 ## Estado atual
 
@@ -97,10 +117,10 @@ cada foto, está em [docs/ASSETS.md](docs/ASSETS.md).
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Lenis · Cormorant
-Garamond e Inter. Página inteiramente estática: sem banco, sem API, sem
+Vite 8 · React 19 com pré-renderização · TypeScript · Tailwind CSS 4 · Lenis ·
+Sentient e Inter. Página inteiramente estática: sem banco, sem API, sem
 formulário.
 
 O movimento (rolagem com inércia, paralaxe, contagem dos números, revelações na
-rolagem) vive em `src/components/motion/` e desliga por inteiro sob
+rolagem) vive em `institucional/src/components/motion/` e desliga por inteiro sob
 `prefers-reduced-motion`. Ver [docs/BRAND.md](docs/BRAND.md).

@@ -1,16 +1,26 @@
-# Publicação no GitHub Pages
+# Publicação
 
-O site é gerado como HTML estático e publicado no GitHub Pages pelo workflow
-`.github/workflows/deploy.yml`, a cada push na `main`.
+O repositório gera **um único site estático** em `dist/`, com três endereços:
 
-**Endereço:** <https://produtosauvp.github.io/lp-auvp-institucional/>
+| Caminho           | Origem                             |
+| ----------------- | ---------------------------------- |
+| `/`               | `indice/index.html`, o índice      |
+| `/institucional/` | `institucional/`, Vite + React     |
+| `/escola/`        | `escola/`, a LP da Escola com Vite |
+
+A mesma pasta serve o **GitHub Pages** e a **Vercel**. Quem monta tudo é
+`scripts/build.mjs`, chamado por `npm run build` na raiz.
 
 ---
 
-## Ativação (uma vez só)
+## GitHub Pages
 
-O workflow já está no repositório, mas o GitHub Pages precisa ser ligado à mão
-antes do primeiro deploy.
+Publicado pelo workflow `.github/workflows/deploy.yml` a cada push na `main`.
+
+**Endereço:** `https://<dono>.github.io/<repo>/`. Hoje,
+<https://produtosauvp.github.io/lp-auvp-institucional/>.
+
+### Ativação (uma vez só)
 
 1. Abra **Settings → Pages** no repositório.
 2. Em **Source**, escolha **GitHub Actions** (não "Deploy from a branch").
@@ -19,18 +29,13 @@ antes do primeiro deploy.
 Para publicar sem esperar um commit novo: **Actions → Deploy no GitHub Pages →
 Run workflow**.
 
-O primeiro deploy leva de 2 a 3 minutos, e o endereço pode demorar mais alguns
-minutos para responder na primeira vez.
+### Como o build sabe o endereço
 
----
+Num repositório de projeto, o Pages serve o site sob `/<repo>` em vez da raiz.
+Se o build não souber disso, todo CSS, fonte e imagem sai apontando para o lugar
+errado e a página carrega em branco.
 
-## Como o build sabe o endereço
-
-Num repositório de projeto, o Pages serve o site sob `/<nome-do-repo>` em vez da
-raiz. Se o build não souber disso, todo CSS, fonte e imagem sai apontando para o
-lugar errado e a página carrega em branco.
-
-O workflow resolve isso perguntando ao próprio GitHub:
+O workflow pergunta ao próprio GitHub:
 
 ```yaml
 - id: pages
@@ -38,114 +43,127 @@ O workflow resolve isso perguntando ao próprio GitHub:
 
 - run: npm run build
   env:
-    NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-    NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
+    SITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+    SITE_URL: ${{ steps.pages.outputs.base_url }}
 ```
 
-Nada é fixado no código. No dia em que um domínio próprio for configurado, a
+E o `scripts/build.mjs` repassa a cada página o seu pedaço:
+
+| Variável         | Vai para                                        | Exemplo no Pages                                |
+| ---------------- | ----------------------------------------------- | ----------------------------------------------- |
+| `SITE_BASE_PATH` | `base` do Vite no institucional e na Escola     | `/lp-auvp-institucional/institucional/`         |
+| `SITE_URL`       | `VITE_SITE_URL`: canonical, OG, sitemap, robots | `https://…/lp-auvp-institucional/institucional` |
+
+Nada fica fixado no código. No dia em que um domínio próprio for configurado, a
 action passa a devolver a raiz e o build se ajusta sozinho.
-
-| Variável                | O que faz                                                                 | Valor hoje                                             |
-| ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `NEXT_PUBLIC_BASE_PATH` | Subcaminho em que o site é servido                                        | `/lp-auvp-institucional`                               |
-| `NEXT_PUBLIC_SITE_URL`  | URL canônica: `<link canonical>`, Open Graph, `sitemap.xml`, `robots.txt` | `https://produtosauvp.github.io/lp-auvp-institucional` |
-
-Em desenvolvimento local as duas ficam vazias e o site roda em `/`.
 
 ---
 
-## Três detalhes que fazem hospedagem estática funcionar
+## Vercel
 
-Estão em `next.config.ts` e no workflow. Cada um resolve uma falha concreta:
+Configurada por `vercel.json`. Basta importar o repositório na Vercel uma vez
+(**Add New → Project**). Não é preciso escolher framework nem preencher nada: o
+arquivo já define install, build e pasta de saída.
 
-**`output: "export"`** gera a pasta `out/` com HTML pronto, em vez de exigir um
-servidor Node.
+Na Vercel o site fica na raiz do domínio, então `SITE_BASE_PATH` fica vazio. A
+URL canônica sai de `VERCEL_PROJECT_PRODUCTION_URL`, que a Vercel define sozinha.
+Para fixar outra (domínio próprio, por exemplo), crie a variável `SITE_URL` em
+**Settings → Environment Variables**.
 
-**`trailingSlash: true`** faz cada rota virar uma pasta com `index.html`. Sem isso,
-o Pages devolve 404 em qualquer caminho que não seja a raiz.
+Cada PR ganha um preview da Vercel com as três páginas.
 
-**`images.unoptimized: true`** porque o Pages serve arquivos, não roda o otimizador de
-imagem do Next.
+---
 
-**`touch out/.nojekyll`** (no workflow) porque o Pages processa o site com Jekyll por
-padrão, e o Jekyll ignora pastas iniciadas por underscore. O Next serve tudo de
-`_next`. Sem esse arquivo, o site sobe sem CSS e sem JavaScript.
+## O que faz a hospedagem estática funcionar
 
-### E um que não é óbvio: `asset()`
+**Pré-renderização do institucional.** `institucional/scripts/build.mjs` faz o
+build normal do Vite, depois um build SSR de `src/entry-server.tsx`, e injeta o
+HTML renderizado no `index.html`. A página chega pronta, como chegava no export
+do Next: robôs de busca e prévias de link leem o conteúdo sem executar
+JavaScript. No navegador, `src/main.tsx` só hidrata.
 
-Com `images.unoptimized`, o `next/image` **não** aplica o `basePath` ao `src`.
-Ele aplica aos chunks e às fontes, mas não às imagens, então toda fotografia e
-todo logo dariam 404 sob subcaminho.
-
-Por isso existe `src/lib/asset.ts`. Todo componente que renderiza `<Image>`
-passa o caminho por ele:
+**`asset()`.** O Vite aplica a `base` aos arquivos que ele mesmo processa
+(JS, CSS, fontes importadas), mas não às strings de caminho que vivem em
+`institucional/src/content/` (`/images/sede-auvp-capital.webp`). Por isso todo
+componente que renderiza `<img>` passa o caminho por
+`institucional/src/lib/asset.ts`:
 
 ```tsx
-<Image src={asset(mission.photo.src)} … />
+<img src={asset(mission.photo.src)} … />
 ```
-
-Os arquivos de `src/content/` continuam guardando caminhos limpos
-(`/images/sede-auvp-capital.webp`). O prefixo é responsabilidade do componente,
-não de quem edita conteúdo.
 
 **Ao criar um componente novo que renderize imagem, use `asset()`.** É o tipo de
 erro que passa despercebido no `npm run dev` e só aparece em produção.
+
+**`.nojekyll`.** O Pages processa o site com Jekyll por padrão, e o Jekyll ignora
+pastas iniciadas por underscore. O build grava o arquivo em `dist/` para
+desligar esse processamento.
 
 ---
 
 ## Peso das imagens
 
-Sem o otimizador do Next, o navegador baixa o arquivo original. Não há
+Não há otimizador de imagem: o navegador baixa o arquivo original, sem
 redimensionamento por breakpoint. Antes de adicionar qualquer foto, gere a
 versão final no tamanho de uso (o padrão está em `docs/ASSETS.md`):
 
 ```bash
-npx sharp-cli --input foto.jpg --output public/images/foto.webp \
+npx sharp-cli --input foto.jpg --output institucional/public/images/foto.webp \
   resize 2000 --withoutEnlargement -- webp --quality 82
 ```
 
 O material do site antigo vive em `acervo/legado/`, **fora de `public/`**, de
 propósito: tudo que está em `public/` é copiado para o build e servido a cada
-visitante.
+visitante. Pelo mesmo motivo, os masters da Escola ficam em
+`escola/imagens-originais/`.
 
 ---
 
 ## Testar o build de produção antes de publicar
 
-Vale a pena, porque o `npm run dev` roda na raiz e não pega erro de `basePath`.
-Este roteiro reproduz exatamente o que o Pages faz:
+O `npm run dev` roda na raiz e não pega erro de caminho. Para conferir o
+resultado final:
 
 ```bash
-NEXT_PUBLIC_BASE_PATH="/lp-auvp-institucional" \
-NEXT_PUBLIC_SITE_URL="https://produtosauvp.github.io/lp-auvp-institucional" \
 npm run build
-
-# serve out/ sob o mesmo subcaminho
-mkdir -p /tmp/pages/lp-auvp-institucional
-cp -r out/. /tmp/pages/lp-auvp-institucional/
-npx http-server /tmp/pages -p 4950 -c-1
+npm run preview     # http://localhost:4173
 ```
 
-Abra <http://localhost:4950/lp-auvp-institucional/> e confira o console do
+Para reproduzir o subcaminho do Pages, gere com `SITE_BASE_PATH` e sirva a
+pasta dentro de um diretório com o nome do repositório:
+
+```bash
+SITE_BASE_PATH=/lp-auvp-institucional npm run build
+mkdir -p /tmp/pages && rm -rf /tmp/pages/lp-auvp-institucional
+cp -r dist /tmp/pages/lp-auvp-institucional
+npm run preview -- /tmp/pages
+```
+
+Abra <http://localhost:4173/lp-auvp-institucional/> e confira o console do
 navegador: **qualquer 404 ali é um 404 em produção.**
+
+> No Git Bash do Windows, prefixe com `MSYS_NO_PATHCONV=1`: sem isso o shell
+> converte `/lp-auvp-institucional` num caminho de disco antes de repassar.
 
 ---
 
 ## Migrar para domínio próprio
 
-Quando o DNS estiver disponível:
+**No Pages:**
 
 1. **Settings → Pages → Custom domain**: informe o domínio (ex.:
-   `institucional.auvp.com.br`) e salve. O GitHub cria um arquivo `CNAME` no
-   repositório sozinho.
+   `institucional.auvp.com.br`) e salve.
 2. **No DNS da AUVP**, crie um registro `CNAME` do subdomínio apontando para
-   `produtosauvp.github.io`.
-   _(Domínio de raiz, sem subdomínio, exige registros `A` para os IPs do Pages
-   em vez de `CNAME`. Ver a documentação do GitHub Pages.)_
+   `<dono>.github.io`.
+   _(Domínio de raiz exige registros `A` para os IPs do Pages. Ver a
+   documentação do GitHub Pages.)_
 3. Aguarde a verificação e marque **Enforce HTTPS**.
 4. **Não é preciso mexer em código.** A `configure-pages` passa a devolver a raiz
-   e o próximo deploy sai sem `basePath`.
-5. Reenvie o `sitemap.xml` no Search Console com o endereço novo.
+   e o próximo deploy sai sem subcaminho.
+
+**Na Vercel:** **Settings → Domains**, e defina `SITE_URL` com o domínio novo.
+
+Nos dois casos, reenvie o `sitemap.xml` do institucional no Search Console.
 
 ---
 
@@ -153,9 +171,10 @@ Quando o DNS estiver disponível:
 
 - [ ] `npm run check` e `npm run build` passam
 - [ ] Nenhum 404 no console ao abrir o build sob o subcaminho
-- [ ] Todos os links de `src/content/site.ts` respondem
+- [ ] Todos os links de `institucional/src/content/site.ts` respondem
 - [ ] O número do WhatsApp em `links.whatsapp` está correto
-- [ ] `/robots.txt` e `/sitemap.xml` carregam e trazem a URL certa
+- [ ] `/institucional/robots.txt` e `/institucional/sitemap.xml` trazem a URL
+      certa
 - [ ] Nenhuma reserva de "Foto pendente" visível, ou é decisão consciente
       (ver `docs/ASSETS.md`)
 - [ ] Lighthouse mobile: referência de 95+ em Performance, Accessibility, Best
@@ -163,12 +182,12 @@ Quando o DNS estiver disponível:
 
 ## Depois de publicar
 
-- Enviar `sitemap.xml` no Google Search Console.
+- Enviar o `sitemap.xml` do institucional no Google Search Console.
 - Validar o dado estruturado no
   [Rich Results Test](https://search.google.com/test/rich-results). A página
   declara `EducationalOrganization` e `FAQPage`.
 
-> **Enquanto o site estiver em `produtosauvp.github.io`,** evite divulgá-lo como
-> endereço definitivo: quando migrar para o domínio próprio, o antigo vira
+> **Enquanto o site estiver em `github.io` ou `vercel.app`,** evite divulgá-lo
+> como endereço definitivo: quando migrar para o domínio próprio, o antigo vira
 > conteúdo duplicado aos olhos do Google. Se a fase de teste for longa, vale
-> trocar `robots.ts` para `index: false` até a migração.
+> trocar o `robots` em `institucional/index.html` para `noindex` até a migração.

@@ -10,7 +10,7 @@ Este é o documento de trabalho entre conteúdo, design e produção audiovisual
 
 ## 1. Como funciona a reserva de foto
 
-Em `src/content/*.ts`, um item com `src: null` faz o componente `Figure`
+Em `institucional/src/content/*.ts`, um item com `src: null` faz o componente `Figure`
 desenhar uma moldura com hachura amarela, o rótulo `Foto pendente` e o briefing
 em itálico:
 
@@ -28,7 +28,7 @@ Nas dobras em que a foto é o fundo da seção inteira (hero e encerramento), a
 moldura não caberia: entra a `BackdropReserve`, que aplica só a textura e uma
 etiqueta discreta no rodapé da dobra.
 
-**Para publicar uma foto**, coloque o arquivo em `public/images/` e troque
+**Para publicar uma foto**, coloque o arquivo em `institucional/public/images/` e troque
 `null` pelo caminho. Nada mais muda.
 
 ---
@@ -161,7 +161,7 @@ branco resolve sem trocar a foto.
 Quando o arquivo falta, a dobra exibe o nome em versalete espaçado, o que
 funciona e é honesto, mas logo é mais forte.
 
-**O CEIA está em `public/images/brand/ceia.png`**, o único arquivo local do
+**O CEIA está em `institucional/public/images/brand/ceia.png`**, o único arquivo local do
 conjunto. Veio em PNG de 244×82 com fundo transparente, e 82px é o limite: a
 dobra o exibe com 80px de altura, ou seja, em 1x, e numa tela retina ele fica
 macio. Trocar por SVG quando o CEIA ou a UFG enviarem um.
@@ -178,8 +178,7 @@ o teto para um arquivo de proporção 3:1.
 
 **Os outros três estão na página servidos pelo CDN da AUVP**
 (`cdn.asupernova.com.br`), o mesmo que serve a landing de produção da escola.
-BTG Pactual, Governo de Goiás e R7 são carregados de lá, e o host está liberado
-em `images.remotePatterns` no `next.config.ts`.
+BTG Pactual, Governo de Goiás e R7 são carregados de lá, direto por `<img>`.
 
 **Isso é temporário, de propósito.** Depender do CDN de outro projeto para uma
 logo de terceiro numa página institucional é frágil. O passo certo é baixar os
@@ -195,7 +194,7 @@ curl -L "https://cdn.asupernova.com.br/lp-auvp/vite/r7-300x257-1.webp" \
   -o public/images/brand/r7.webp
 ```
 
-Depois é só trocar o campo `logo` em `src/content/endorsements.ts` pelos
+Depois é só trocar o campo `logo` em `institucional/src/content/endorsements.ts` pelos
 caminhos locais e remover a entrada de `remotePatterns`.
 
 As logos aparecem **em cor própria e em corpo grande**, num bloco de quatro ao
@@ -254,7 +253,7 @@ decidir.
 
 Quatro fotos do site anterior, tiradas da página quando as imagens foram
 mockadas. Continuam disponíveis e valem consideração quando a produção começar.
-A quinta, a fachada da sede, voltou para `public/images/` e está publicada na
+A quinta, a fachada da sede, voltou para `institucional/public/images/` e está publicada na
 dobra de missão.
 
 | Arquivo                     | Leitura                                                                                                                                   | Recorte sugerido                                                                                                                                                                                                                                                         |
@@ -269,11 +268,11 @@ dobra de missão.
 
 Fora de uso, e não devem entrar na página.
 
-| Arquivo                                  | Por que não entra                                                                                                                                                |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `modulo-1` a `modulo-7`, `modulo-bonus`  | Cards do branding antigo: preto e ouro, sans condensada, ícones em degradê metálico. Substituídos por ícones em traço fino (`src/components/ui/ModuleIcon.tsx`). |
-| `prancheta-55-300x300.png`               | Selo "Garantia 100% AUVP" skeuomórfico, com relevo e estrelas. O roteiro pede ícone simples de escudo com check, feito em SVG.                                   |
-| `computer-contador-de-proxima-turma.png` | Mockup de contagem regressiva de campanha. Urgência de lançamento é o oposto do tom institucional.                                                               |
+| Arquivo                                  | Por que não entra                                                                                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `modulo-1` a `modulo-7`, `modulo-bonus`  | Cards do branding antigo: preto e ouro, sans condensada, ícones em degradê metálico. Substituídos por ícones em traço fino (`institucional/src/components/ui/ModuleIcon.tsx`). |
+| `prancheta-55-300x300.png`               | Selo "Garantia 100% AUVP" skeuomórfico, com relevo e estrelas. O roteiro pede ícone simples de escudo com check, feito em SVG.                                                 |
+| `computer-contador-de-proxima-turma.png` | Mockup de contagem regressiva de campanha. Urgência de lançamento é o oposto do tom institucional.                                                                             |
 
 Também foi descartado o `hero (1).webp`, duplicata byte a byte de `hero.webp`.
 
@@ -288,16 +287,16 @@ Também foi descartado o `hero (1).webp`, duplicata byte a byte de `hero.webp`.
 | Peso alvo         | até 250 KB por arquivo                                                        |
 | Redimensionamento | obrigatório antes do commit                                                   |
 | Nome              | minúsculas, sem acento, separado por hífen: `private-day-2025-palestras.webp` |
-| Local             | `public/images/`                                                              |
+| Local             | `institucional/public/images/`                                                |
 | Proporção         | recorte feito no arquivo, não no CSS                                          |
 
-**Sobre redimensionar:** o site roda em hospedagem estática, sem o otimizador de
-imagem do Next. O navegador baixa o arquivo exatamente como ele está no
+**Sobre redimensionar:** o site roda em hospedagem estática, sem otimizador de
+imagem. O navegador baixa o arquivo exatamente como ele está no
 repositório, sem variante por breakpoint. Uma foto de 6000px custa a mesma banda
 no celular e no desktop.
 
 ```bash
-npx sharp-cli --input original.jpg --output public/images/nome-da-foto.webp \
+npx sharp-cli --input original.jpg --output institucional/public/images/nome-da-foto.webp \
   resize 2000 --withoutEnlargement -- webp --quality 82
 ```
 

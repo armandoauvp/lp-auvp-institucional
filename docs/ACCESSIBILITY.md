@@ -70,7 +70,7 @@ mouse depois de selecionar um parágrafo não leve a pessoa para fora da página
 ## Como verificar
 
 ```bash
-npm run build && npm run start
+npm run build && npm run preview   # http://localhost:4173/institucional/
 ```
 
 - Lighthouse (aba Accessibility) em mobile e desktop.
